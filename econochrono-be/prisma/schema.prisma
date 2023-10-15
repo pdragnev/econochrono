@@ -11,15 +11,49 @@ datasource db {
 }
 
 model Stock {
-  stockId   Int           @id @default(autoincrement())
-  stockName String        @unique
-  prices    PriceHistory[]
+  stockId         Int           @id @default(autoincrement())
+  stockName       String        @unique
+  prices          PriceHistory[]
+  minuteAggregates MinuteAggregate[]
+  hourAggregates   HourAggregate[]
+  dayAggregates    DayAggregate[]
 }
 
 model PriceHistory {
   entryId   Int     @id @default(autoincrement())
-  timestamp DateTime
+  timestamp DateTime 
   price     Decimal
   stockId   Int
-  stock     Stock   @relation(fields: [stockId], references: [stockId])
+  stock     Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
+  @@index([timestamp]) 
+}
+
+model MinuteAggregate {
+  id          Int      @id @default(autoincrement())
+  startOfMinute DateTime 
+  minPrice    Decimal
+  maxPrice    Decimal
+  stockId     Int
+  stock       Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
+  @@index([startOfMinute])
+}
+
+model HourAggregate {
+  id          Int      @id @default(autoincrement())
+  startOfHour DateTime 
+  minPrice    Decimal
+  maxPrice    Decimal
+  stockId     Int
+  stock       Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
+  @@index([startOfHour])
+}
+
+model DayAggregate {
+  id         Int      @id @default(autoincrement())
+  startOfDay DateTime 
+  minPrice   Decimal
+  maxPrice   Decimal
+  stockId    Int
+  stock      Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
+  @@index([startOfDay])
 }

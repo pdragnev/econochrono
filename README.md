@@ -1,4 +1,4 @@
-# EconoCrono Project
+# EconoChrono Project
 
 ## Description
 
@@ -6,18 +6,19 @@ A simple and efficient platform to manage and visualize stock data. Built with t
 
 ## Project Structure
 
-- `backend/`: Contains all backend-related code and configuration.
-- `frontend/`: (If you add a frontend) Contains frontend assets and code.
+- `econochrono-be/`: Contains all backend-related code and configuration.
+- `econochrono-fe/` Contains frontend assets and code.
 
 ## Installation
 
 ### Backend
 
-Navigate to the `backend` directory:
+Navigate to the `econochrono-be` directory:
 
 ```bash
-cd backend/
+cd econochrono-be/
 ```
+
 Then install the necessary dependencies:
 
 ```bash

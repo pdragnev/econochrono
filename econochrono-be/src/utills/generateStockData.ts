@@ -1,15 +1,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface StockPriceEntry {
+export interface StockPriceEntry {
   timestamp: Date;
   price: number;
 }
 
-interface StockData {
+export interface StockData {
   stockName: string;
   history: StockPriceEntry[];
 }
+
+const getRandomPriceChange = (maxPriceChange: number): number => {
+  return (Math.random() - 0.5) * 2 * maxPriceChange;
+};
 
 export const generateRandomStockData = (
   stockName: string,
@@ -21,17 +25,21 @@ export const generateRandomStockData = (
   const history: StockPriceEntry[] = [];
   const totalSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
 
+  let currentTime = new Date(startDate.getTime());
+
   for (let i = 0; i <= totalSeconds; i++) {
     const previousPrice =
       history.length > 0 ? history[history.length - 1].price : startPrice;
-    const priceChange = (Math.random() - 0.5) * 2 * maxPriceChange;
+
+    const priceChange = getRandomPriceChange(maxPriceChange);
     const currentPrice = previousPrice + priceChange;
 
-    const currentTime = new Date(startDate.getTime() + i * 1000);
     history.push({
       timestamp: currentTime,
-      price: Math.max(currentPrice, 1),
+      price: Math.max(currentPrice, 20), //minimum stock price of 20
     });
+
+    currentTime = new Date(currentTime.getTime() + 1000);
   }
 
   return {
@@ -40,11 +48,12 @@ export const generateRandomStockData = (
   };
 };
 
-const startDate = new Date('2023-10-01 00:00:00');
-const endDate = new Date('2023-10-01 23:59:59');
-const stockName = 'EconoTech';
-const stockData = generateRandomStockData(stockName, startDate, endDate);
-fs.writeFileSync(
-  path.join(__dirname, 'stockData.json'),
-  JSON.stringify(stockData, null, 2),
-);
+export const writeStockDataToFile = (
+  stockData: StockData,
+  fileName: string,
+): void => {
+  fs.writeFileSync(
+    path.join(__dirname, fileName),
+    JSON.stringify(stockData, null, 2),
+  );
+};
