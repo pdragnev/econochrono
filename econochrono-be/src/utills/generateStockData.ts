@@ -15,45 +15,49 @@ const getRandomPriceChange = (maxPriceChange: number): number => {
   return (Math.random() - 0.5) * 2 * maxPriceChange;
 };
 
-export const generateRandomStockData = (
-  stockName: string,
+export function* generateRandomStockDataInChunks(
   startDate: Date,
   endDate: Date,
+  chunkSize: number,
   startPrice: number = 100,
   maxPriceChange: number = 5,
-): StockData => {
-  const history: StockPriceEntry[] = [];
+): Generator<StockPriceEntry[]> {
+  let history: StockPriceEntry[] = [];
   const totalSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
-
   let currentTime = new Date(startDate.getTime());
 
   for (let i = 0; i <= totalSeconds; i++) {
     const previousPrice =
       history.length > 0 ? history[history.length - 1].price : startPrice;
-
     const priceChange = getRandomPriceChange(maxPriceChange);
     const currentPrice = previousPrice + priceChange;
 
     history.push({
       timestamp: currentTime,
-      price: Math.max(currentPrice, 20), //minimum stock price of 20
+      price: Math.max(currentPrice, 20),
     });
+
+    if (history.length >= chunkSize || i === totalSeconds) {
+      yield history;
+      history = [];
+    }
 
     currentTime = new Date(currentTime.getTime() + 1000);
   }
-
-  return {
-    stockName: stockName,
-    history: history,
-  };
-};
+}
 
 export const writeStockDataToFile = (
   stockData: StockData,
   fileName: string,
 ): void => {
-  fs.writeFileSync(
-    path.join(__dirname, fileName),
-    JSON.stringify(stockData, null, 2),
-  );
+  const writeStream = fs.createWriteStream(path.join(__dirname, fileName), {
+    flags: 'a',
+  });
+  writeStream.write(JSON.stringify(stockData.stockName) + '\n');
+
+  for (const entry of stockData.history) {
+    writeStream.write(JSON.stringify(entry) + '\n');
+  }
+
+  writeStream.end();
 };

@@ -1,42 +1,48 @@
 // Import necessary functions and types
 import { PrismaClient } from '@prisma/client';
 import {
-  StockData,
-  generateRandomStockData,
+  generateRandomStockDataInChunks,
   writeStockDataToFile,
 } from './generateStockData';
 import {
-  generateDayAggregates,
   generateHourAggregates,
   generateMinuteAggregates,
 } from './stockAggregations';
-import { insertStockIntoDatabase } from './loadStockDataToDB';
+import { insertStock, insertStockPrices } from './loadStockDataToDB';
 
+const CHUNK_SIZE = 5000;
 const prisma = new PrismaClient();
 
 async function main() {
-  const startDate = new Date(Date.UTC(2023, 9, 1, 0, 0, 0));
+  const startDate = new Date(Date.UTC(2022, 9, 1, 0, 0, 0));
   const endDate = new Date(Date.UTC(2023, 9, 11, 0, 0, 0));
   const stockName = 'EconoTech';
-  const stockData: StockData = generateRandomStockData(
-    stockName,
+
+  const insertedStock = await insertStock(prisma, { stockName, history: [] });
+
+  console.log(`Stock inserted with name ${insertedStock.stockName}`);
+
+  const stockGenerator = generateRandomStockDataInChunks(
     startDate,
     endDate,
+    CHUNK_SIZE,
   );
-
-  writeStockDataToFile(stockData, 'stockData.json');
-
-  const insertedStock = await insertStockIntoDatabase(prisma, stockData);
-  console.log(`Stock inserted with name ${insertedStock.stockName}`);
+  for (const stockChunk of stockGenerator) {
+    const stockData = { stockName, history: stockChunk };
+    writeStockDataToFile(stockData, 'stockData.json');
+    await insertStockPrices(
+      prisma,
+      CHUNK_SIZE,
+      insertedStock.stockId,
+      stockData.history,
+    );
+  }
 
   await generateMinuteAggregates(prisma, insertedStock.stockId);
   console.log('Minute aggregation complete');
 
   await generateHourAggregates(prisma, insertedStock.stockId);
   console.log('Hour aggregation complete');
-
-  await generateDayAggregates(prisma, insertedStock.stockId);
-  console.log('Day aggregation complete');
 }
 
 main()
