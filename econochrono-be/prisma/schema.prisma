@@ -29,20 +29,20 @@ model PriceHistory {
 
 model MinuteAggregate {
   id          Int      @id @default(autoincrement())
-  startOfMinute DateTime 
+  timestamp DateTime 
   minPrice    Decimal
   maxPrice    Decimal
   stockId     Int
   stock       Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
-  @@index([startOfMinute])
+  @@index([timestamp])
 }
 
 model HourAggregate {
   id          Int      @id @default(autoincrement())
-  startOfHour DateTime 
+  timestamp DateTime 
   minPrice    Decimal
   maxPrice    Decimal
   stockId     Int
   stock       Stock   @relation(fields: [stockId], references: [stockId], onDelete: Cascade)
-  @@index([startOfHour])
+  @@index([timestamp])
 }

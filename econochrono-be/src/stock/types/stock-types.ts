@@ -12,3 +12,10 @@ export type TradeResult = {
   minPriceInChunk?: Decimal;
   minPriceTimestamp?: Date;
 };
+
+export class UnifiedDataPoint {
+  timestamp: Date;
+  minPrice?: Decimal;
+  maxPrice?: Decimal;
+  price?: Decimal;
+}

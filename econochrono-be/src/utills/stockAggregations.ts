@@ -32,7 +32,7 @@ export async function generateMinuteAggregates(
       await prisma.minuteAggregate.create({
         data: {
           stockId: stockId,
-          startOfMinute: oneMinuteData[0].timestamp,
+          timestamp: oneMinuteData[0].timestamp,
           minPrice: minPrice,
           maxPrice: maxPrice,
         },
@@ -54,11 +54,11 @@ export async function generateHourAggregates(
       where: {
         stockId: stockId,
         ...(lastProcessedTimestamp && {
-          startOfMinute: { gt: lastProcessedTimestamp },
+          timestamp: { gt: lastProcessedTimestamp },
         }),
       },
       orderBy: {
-        startOfMinute: 'asc',
+        timestamp: 'asc',
       },
       take: 60, // 60 minutes = 1 hour
     });
@@ -75,13 +75,13 @@ export async function generateHourAggregates(
     await prisma.hourAggregate.create({
       data: {
         stockId: stockId,
-        startOfHour: minuteAggregates[0].startOfMinute,
+        timestamp: minuteAggregates[0].timestamp,
         minPrice: minPrice,
         maxPrice: maxPrice,
       },
     });
 
     lastProcessedTimestamp =
-      minuteAggregates[minuteAggregates.length - 1].startOfMinute;
+      minuteAggregates[minuteAggregates.length - 1].timestamp;
   }
 }

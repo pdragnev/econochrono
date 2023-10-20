@@ -1,4 +1,4 @@
-import { IsInt, IsDateString, IsNotEmpty } from 'class-validator';
+import { IsInt, IsDateString, IsNotEmpty, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class OptimalTradeStockData {
@@ -14,4 +14,7 @@ export class OptimalTradeStockData {
   @IsDateString()
   @IsNotEmpty()
   endDate: Date;
+
+  @IsIn(['second', 'minute', 'hour'])
+  granularity?: 'second' | 'minute' | 'hour';
 }
