@@ -3,34 +3,38 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { OptimalTradeStockResult } from './dtos/optimal-trade-stock-result';
-import { TradeResult, UnifiedDataPoint } from './types/stock-types';
+import { OptimalTradeStockResultDto } from './dtos/optimal-trade-stock-result';
+import {
+  Granularity,
+  TradeResult,
+  UnifiedDataPoint,
+} from './types/stock-types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { StockRepository } from './repository/stock.repository';
-import { SecondGranularityStrategy } from './strategies/second-granularity-strategy';
-import { MinuteGranularityStrategy } from './strategies/minute-granularity-strategy';
-import { HourGranularityStrategy } from './strategies/hour-granularity-strategy';
-import { GranularityStrategy } from './strategies/granularity-strategy';
+import { GranularityStrategy } from './services/granularity-strategy';
 
 @Injectable()
 export class StockService {
   private readonly CHUNK_SIZE = 10000;
   constructor(
     private readonly stockRepository: StockRepository,
-    private readonly secondGranularityStrategy: SecondGranularityStrategy,
-    private readonly minuteGranularityStrategy: MinuteGranularityStrategy,
-    private readonly hourGranularityStrategy: HourGranularityStrategy,
+    private readonly granularityStrategy: GranularityStrategy,
   ) {}
 
   async getOptimalTradeTime(
     stockId: number,
     startDate: Date,
     endDate: Date,
-    granularity: 'second' | 'minute' | 'hour',
-  ): Promise<OptimalTradeStockResult> {
+    granularity: Granularity,
+  ): Promise<OptimalTradeStockResultDto> {
     if (!(await this.stockRepository.stockExists(stockId))) {
       throw new NotFoundException(`Stock with ID ${stockId} not found.`);
     }
+
+    if (!granularity) {
+      granularity = this.determineGranularity(startDate, endDate);
+    }
+
     try {
       const tradeResult = await this.computeOptimalTrade(
         stockId,
@@ -55,7 +59,7 @@ export class StockService {
     stockId: number,
     startDate: Date,
     endDate: Date,
-    granularity: 'second' | 'minute' | 'hour',
+    granularity: Granularity,
   ): Promise<TradeResult> {
     let overallResult: TradeResult = {
       maxProfit: new Decimal(0),
@@ -65,27 +69,12 @@ export class StockService {
       minPriceTimestamp: new Date(0),
     };
 
-    let strategy: GranularityStrategy;
-
-    switch (granularity) {
-      case 'second':
-        strategy = this.secondGranularityStrategy;
-        break;
-      case 'minute':
-        strategy = this.minuteGranularityStrategy;
-        break;
-      case 'hour':
-        strategy = this.hourGranularityStrategy;
-        break;
-      default:
-        throw new Error('Invalid granularity specified.');
-    }
-
-    const dataStreamIterator = strategy.streamData(
+    const dataStreamIterator = this.granularityStrategy.streamData(
       stockId,
       this.CHUNK_SIZE,
       startDate,
       endDate,
+      granularity,
     );
 
     for await (const chunk of dataStreamIterator) {
@@ -146,5 +135,19 @@ export class StockService {
     }
 
     return chunkResult;
+  }
+
+  private determineGranularity(startDate: Date, endDate: Date): Granularity {
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+    const dateDiff =
+      new Date(endDate).getTime() - new Date(startDate).getTime();
+
+    if (dateDiff < ONE_DAY) {
+      return Granularity.SECOND;
+    } else if (dateDiff <= 31 * ONE_DAY) {
+      return Granularity.MINUTE;
+    } else {
+      return Granularity.HOUR;
+    }
   }
 }

@@ -1,20 +1,21 @@
-import { IsInt, IsDateString, IsNotEmpty, IsIn } from 'class-validator';
+import { IsInt, IsNotEmpty, IsIn, IsDateString } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { Granularity } from '../types/stock-types';
 
-export class OptimalTradeStockData {
+export class OptimalTradeStockDataDto {
   @IsInt()
   @Transform(({ value }) => parseInt(value))
   @IsNotEmpty()
   stockId: number;
 
-  @IsDateString()
   @IsNotEmpty()
+  @IsDateString()
   startDate: Date;
 
-  @IsDateString()
   @IsNotEmpty()
+  @IsDateString()
   endDate: Date;
 
-  @IsIn(['second', 'minute', 'hour'])
-  granularity?: 'second' | 'minute' | 'hour';
+  @IsIn([Granularity.SECOND, Granularity.MINUTE, Granularity.HOUR, undefined])
+  granularity?: Granularity;
 }

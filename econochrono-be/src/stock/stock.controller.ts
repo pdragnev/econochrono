@@ -7,9 +7,10 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { StockService } from './stock.service';
-import { OptimalTradeStockData } from './dtos/optimal-trade-stock-data.dto';
-import { OptimalTradeStockResult } from './dtos/optimal-trade-stock-result';
+import { OptimalTradeStockDataDto } from './dtos/optimal-trade-stock-data.dto';
+import { OptimalTradeStockResultDto } from './dtos/optimal-trade-stock-result';
 import { CustomExceptionFilter } from 'src/filters/http-exception.filter';
+import { Granularity } from './types/stock-types';
 
 @Controller('stock')
 @UseFilters(CustomExceptionFilter)
@@ -19,27 +20,10 @@ export class StockController {
   @Get('/optimal-trade')
   @UsePipes(new ValidationPipe())
   async getOptimalTradeTime(
-    @Query() optimalTradeStockData: OptimalTradeStockData,
-  ): Promise<OptimalTradeStockResult> {
-    const { stockId, startDate, endDate } = optimalTradeStockData;
-
-    let granularity = optimalTradeStockData.granularity;
-
-    if (!granularity) {
-      const ONE_HOUR = 60 * 60 * 1000;
-      const ONE_DAY = 24 * ONE_HOUR;
-      const dateDiff =
-        new Date(endDate).getTime() - new Date(startDate).getTime();
-
-      if (dateDiff <= ONE_HOUR) {
-        granularity = 'second';
-      } else if (dateDiff <= ONE_DAY) {
-        granularity = 'minute';
-      } else {
-        granularity = 'hour';
-      }
-    }
-
+    @Query() optimalTradeStockDataDto: OptimalTradeStockDataDto,
+  ): Promise<OptimalTradeStockResultDto> {
+    const { stockId, startDate, endDate, granularity } =
+      optimalTradeStockDataDto;
     return await this.stockService.getOptimalTradeTime(
       stockId,
       startDate,

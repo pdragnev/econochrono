@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PriceHistory, MinuteAggregate, HourAggregate } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AppDatabaseService } from 'src/app.service';
 
 @Injectable()
 export class StockRepository {
   private static readonly ONE_MILLISECOND = 1;
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly databaseService: AppDatabaseService) {}
 
   async stockExists(stockId: number): Promise<boolean> {
     try {
-      const count = await this.prisma.stock.count({
+      const count = await this.databaseService.stock.count({
         where: { stockId: Number(stockId) },
       });
       return count > 0;
@@ -24,10 +24,12 @@ export class StockRepository {
     startDate: Date,
     endDate: Date,
   ): AsyncGenerator<PriceHistory[]> {
-    let currentStartDate = startDate;
-    while (true) {
-      try {
-        const priceHistoryChunk = await this.prisma.priceHistory.findMany({
+    let currentStartDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    while (currentStartDate <= endDate) {
+      const priceHistoryChunk =
+        await this.databaseService.priceHistory.findMany({
           where: {
             stockId: Number(stockId),
             timestamp: { gte: currentStartDate, lte: endDate },
@@ -36,17 +38,14 @@ export class StockRepository {
           orderBy: { timestamp: 'asc' },
         });
 
-        if (priceHistoryChunk.length === 0) break;
+      if (priceHistoryChunk.length === 0) return;
 
-        currentStartDate = new Date(
-          priceHistoryChunk[priceHistoryChunk.length - 1].timestamp.getTime() +
-            StockRepository.ONE_MILLISECOND,
-        );
+      currentStartDate = new Date(
+        priceHistoryChunk[priceHistoryChunk.length - 1].timestamp.getTime() +
+          StockRepository.ONE_MILLISECOND,
+      );
 
-        yield priceHistoryChunk;
-      } catch (error) {
-        throw new Error(`Error streaming price history: ${error.message}`);
-      }
+      yield priceHistoryChunk;
     }
   }
 
@@ -56,10 +55,12 @@ export class StockRepository {
     startDate: Date,
     endDate: Date,
   ): AsyncGenerator<MinuteAggregate[]> {
-    let currentStartDate = startDate;
-    while (true) {
-      try {
-        const aggregateChunk = await this.prisma.minuteAggregate.findMany({
+    let currentStartDate = new Date(startDate);
+    endDate = new Date(endDate);
+
+    while (currentStartDate <= endDate) {
+      const aggregateChunk =
+        await this.databaseService.minuteAggregate.findMany({
           where: {
             stockId: Number(stockId),
             timestamp: { gte: currentStartDate, lte: endDate },
@@ -68,17 +69,14 @@ export class StockRepository {
           orderBy: { timestamp: 'asc' },
         });
 
-        if (aggregateChunk.length === 0) break;
+      if (aggregateChunk.length === 0) return;
 
-        currentStartDate = new Date(
-          aggregateChunk[aggregateChunk.length - 1].timestamp.getTime() +
-            StockRepository.ONE_MILLISECOND,
-        );
+      currentStartDate = new Date(
+        aggregateChunk[aggregateChunk.length - 1].timestamp.getTime() +
+          +StockRepository.ONE_MILLISECOND,
+      );
 
-        yield aggregateChunk;
-      } catch (error) {
-        throw new Error(`Error streaming minute aggregates: ${error.message}`);
-      }
+      yield aggregateChunk;
     }
   }
 
@@ -88,29 +86,27 @@ export class StockRepository {
     startDate: Date,
     endDate: Date,
   ): AsyncGenerator<HourAggregate[]> {
-    let currentStartDate = startDate;
-    while (true) {
-      try {
-        const aggregateChunk = await this.prisma.hourAggregate.findMany({
-          where: {
-            stockId: Number(stockId),
-            timestamp: { gte: currentStartDate, lte: endDate },
-          },
-          take: chunkSize,
-          orderBy: { timestamp: 'asc' },
-        });
+    let currentStartDate = new Date(startDate);
+    endDate = new Date(endDate);
 
-        if (aggregateChunk.length === 0) break;
+    while (currentStartDate <= endDate) {
+      const aggregateChunk = await this.databaseService.hourAggregate.findMany({
+        where: {
+          stockId: Number(stockId),
+          timestamp: { gte: currentStartDate, lte: endDate },
+        },
+        take: chunkSize,
+        orderBy: { timestamp: 'asc' },
+      });
 
-        currentStartDate = new Date(
-          aggregateChunk[aggregateChunk.length - 1].timestamp.getTime() +
-            StockRepository.ONE_MILLISECOND,
-        );
+      if (aggregateChunk.length === 0) return;
 
-        yield aggregateChunk;
-      } catch (error) {
-        throw new Error(`Error streaming hour aggregates: ${error.message}`);
-      }
+      currentStartDate = new Date(
+        aggregateChunk[aggregateChunk.length - 1].timestamp.getTime() +
+          +StockRepository.ONE_MILLISECOND,
+      );
+
+      yield aggregateChunk;
     }
   }
 }

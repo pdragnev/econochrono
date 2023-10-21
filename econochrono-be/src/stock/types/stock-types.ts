@@ -5,17 +5,23 @@ export interface StockPriceDecimalEntry {
   price: Decimal;
 }
 
-export type TradeResult = {
+export interface TradeResult {
   maxProfit: Decimal;
   buyTime: Date;
   sellTime: Date;
   minPriceInChunk?: Decimal;
   minPriceTimestamp?: Date;
-};
+}
 
-export class UnifiedDataPoint {
+export interface UnifiedDataPoint {
   timestamp: Date;
   minPrice?: Decimal;
   maxPrice?: Decimal;
   price?: Decimal;
+}
+
+export enum Granularity {
+  SECOND = 'second',
+  MINUTE = 'minute',
+  HOUR = 'hour',
 }

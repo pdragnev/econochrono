@@ -1,4 +1,3 @@
-// Import necessary functions and types
 import { PrismaClient } from '@prisma/client';
 import {
   generateRandomStockDataInChunks,

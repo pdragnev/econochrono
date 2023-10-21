@@ -1,6 +1,6 @@
 import { IsDate, IsNumber } from 'class-validator';
 
-export class OptimalTradeStockResult {
+export class OptimalTradeStockResultDto {
   @IsDate()
   buyTime: Date;
 
