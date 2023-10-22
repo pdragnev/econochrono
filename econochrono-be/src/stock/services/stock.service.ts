@@ -3,15 +3,15 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { OptimalTradeStockResultDto } from './dtos/optimal-trade-stock-result';
+import { OptimalTradeStockResultDto } from '../dtos/optimal-trade-stock-result';
 import {
   Granularity,
   TradeResult,
   UnifiedDataPoint,
-} from './types/stock-types';
+} from '../types/stock-types';
 import { Decimal } from '@prisma/client/runtime/library';
-import { StockRepository } from './repository/stock.repository';
-import { GranularityStrategy } from './services/granularity-strategy';
+import { StockRepository } from '../repository/stock.repository';
+import { GranularityStrategy } from './granularity-strategy';
 
 @Injectable()
 export class StockService {
@@ -133,7 +133,6 @@ export class StockService {
         chunkResult.sellTime = data[i].timestamp;
       }
     }
-
     return chunkResult;
   }
 

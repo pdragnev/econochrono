@@ -6,11 +6,11 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { StockService } from './stock.service';
-import { OptimalTradeStockDataDto } from './dtos/optimal-trade-stock-data.dto';
-import { OptimalTradeStockResultDto } from './dtos/optimal-trade-stock-result';
+import { StockService } from '../services/stock.service';
+import { OptimalTradeStockDataDto } from '../dtos/optimal-trade-stock-data.dto';
+import { OptimalTradeStockResultDto } from '../dtos/optimal-trade-stock-result';
 import { CustomExceptionFilter } from 'src/filters/http-exception.filter';
-import { Granularity } from './types/stock-types';
+import { Granularity } from '../types/stock-types';
 
 @Controller('stock')
 @UseFilters(CustomExceptionFilter)

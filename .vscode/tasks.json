@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "path": "econochrono-be",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build - econochrono-be",
+      "detail": "nest build"
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "path": "econochrono-be",
+      "problemMatcher": [],
+      "label": "npm: start - econochrono-be",
+      "detail": "nest start"
+    }
+  ]
+}
