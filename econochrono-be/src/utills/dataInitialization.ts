@@ -13,9 +13,9 @@ const CHUNK_SIZE = 5000;
 const prisma = new PrismaClient();
 
 async function main() {
-  const startDate = new Date(Date.UTC(2022, 9, 1, 0, 0, 0));
+  const startDate = new Date(Date.UTC(2023, 9, 1, 0, 0, 0));
   const endDate = new Date(Date.UTC(2023, 9, 11, 0, 0, 0));
-  const stockName = 'EconoTech';
+  const stockName = 'Tesla Standard';
 
   const insertedStock = await insertStock(prisma, { stockName, history: [] });
 

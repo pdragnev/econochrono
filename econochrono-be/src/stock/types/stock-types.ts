@@ -25,3 +25,9 @@ export enum Granularity {
   MINUTE = 'minute',
   HOUR = 'hour',
 }
+
+export interface StockDateRange {
+  stockId: number;
+  startDate: Date;
+  endDate: Date;
+}

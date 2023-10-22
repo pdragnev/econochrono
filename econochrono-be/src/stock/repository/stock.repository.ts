@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { PriceHistory, MinuteAggregate, HourAggregate } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  PriceHistory,
+  MinuteAggregate,
+  HourAggregate,
+  Stock,
+} from '@prisma/client';
 import { AppDatabaseService } from 'src/app.service';
+import { StockDateRange } from '../types/stock-types';
 
 @Injectable()
 export class StockRepository {
@@ -8,14 +14,64 @@ export class StockRepository {
   constructor(private readonly databaseService: AppDatabaseService) {}
 
   async stockExists(stockId: number): Promise<boolean> {
-    try {
-      const count = await this.databaseService.stock.count({
-        where: { stockId: Number(stockId) },
-      });
-      return count > 0;
-    } catch (error) {
-      throw new Error(`Failed to check stock existence: ${error.message}`);
+    const count = await this.databaseService.stock.count({
+      where: { stockId: Number(stockId) },
+    });
+    return count > 0;
+  }
+
+  async getStock(stockId: string): Promise<Stock> {
+    const stock = await this.databaseService.stock.findUnique({
+      where: {
+        stockId: Number(stockId),
+      },
+    });
+
+    if (!stock) {
+      throw new NotFoundException(`Stock with ID ${stockId} not found.`);
     }
+
+    return stock;
+  }
+
+  async getAllStocks(): Promise<Stock[]> {
+    return await this.databaseService.stock.findMany();
+  }
+
+  async getStockDateRange(stockId: string): Promise<StockDateRange> {
+    return await this.getDateRangeForStock(Number(stockId));
+  }
+
+  async getDateRangesForStocks(stockIds: number[]): Promise<StockDateRange[]> {
+    return await Promise.all(
+      stockIds.map((stockId) => this.getDateRangeForStock(stockId)),
+    );
+  }
+
+  private async getDateRangeForStock(stockId: number): Promise<StockDateRange> {
+    const startDate = await this.databaseService.hourAggregate.findFirst({
+      where: { stockId },
+      orderBy: { timestamp: 'asc' },
+      select: { timestamp: true },
+    });
+
+    const endDate = await this.databaseService.hourAggregate.findFirst({
+      where: { stockId },
+      orderBy: { timestamp: 'desc' },
+      select: { timestamp: true },
+    });
+
+    if (!startDate || !endDate) {
+      throw new NotFoundException(
+        `Date range data for Stock with ID ${stockId} not found.`,
+      );
+    }
+
+    return {
+      stockId: stockId,
+      startDate: startDate.timestamp,
+      endDate: endDate.timestamp,
+    };
   }
 
   async *streamPriceHistory(

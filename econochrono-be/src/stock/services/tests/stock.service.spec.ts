@@ -7,7 +7,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Granularity, UnifiedDataPoint } from 'src/stock/types/stock-types';
-import { Decimal } from '@prisma/client/runtime/library';
 import { mockHourlyAggregateData } from './mockData';
 import { AppDatabaseService } from 'src/app.service';
 
@@ -117,22 +116,6 @@ describe('StockService', () => {
         Granularity.HOUR,
       ),
     ).rejects.toThrow(InternalServerErrorException);
-  });
-
-  it('should compute the optimal trade for a given chunk of data', () => {
-    const data: UnifiedDataPoint[] = [
-      // Add some test data here...
-    ];
-    const minPriceSoFar = new Decimal(0);
-    const minPriceTimestamp = new Date('2022-01-01T00:00:00Z');
-
-    const result = service.computeOptimalTradeForChunk(
-      data,
-      minPriceSoFar,
-      minPriceTimestamp,
-    );
-    expect(result).toBeDefined();
-    // Add further assertions based on your expected output.
   });
 
   it('should return SECOND granularity for date differences less than one day', () => {
