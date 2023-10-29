@@ -9,6 +9,8 @@ export interface TradeResult {
   maxProfit: Decimal;
   buyTime: Date;
   sellTime: Date;
+  buyPrice: Decimal;
+  sellPrice: Decimal;
   minPriceInChunk?: Decimal;
   minPriceTimestamp?: Date;
 }

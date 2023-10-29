@@ -24,12 +24,13 @@ export class StockController {
   async getOptimalTradeTime(
     @Query() optimalTradeStockDataDto: OptimalTradeStockDataDto,
   ): Promise<OptimalTradeStockResultDto> {
-    const { stockId, startDate, endDate, granularity } =
+    const { stockId, startDate, endDate, amount, granularity } =
       optimalTradeStockDataDto;
     return await this.stockService.getOptimalTradeTime(
       stockId,
       startDate,
       endDate,
+      amount,
       granularity,
     );
   }

@@ -21,6 +21,7 @@ export class StockService {
     stockId: number,
     startDate: Date,
     endDate: Date,
+    amount: number,
     granularity: Granularity,
   ): Promise<OptimalTradeStockResultDto> {
     if (!(await this.stockRepository.stockExists(stockId))) {
@@ -43,10 +44,19 @@ export class StockService {
           granularity,
         );
 
+      const fractionOfStocksToBuy = amount / tradeResult.buyPrice.toNumber();
+
+      const totalProfit =
+        (tradeResult.sellPrice.toNumber() - tradeResult.buyPrice.toNumber()) *
+        fractionOfStocksToBuy;
+
       return {
         buyTime: tradeResult.buyTime,
+        buyPrice: tradeResult.buyPrice.toNumber(),
         sellTime: tradeResult.sellTime,
-        maxProfit: tradeResult.maxProfit.toNumber(),
+        sellPrice: tradeResult.sellPrice.toNumber(),
+        totalProfit: totalProfit,
+        numberOfStocks: fractionOfStocksToBuy,
       };
     } catch (error) {
       throw new InternalServerErrorException(

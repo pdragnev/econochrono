@@ -1,3 +1,4 @@
+import { StockComputationService } from './../stock-computation.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { StockService } from '../stock.service';
 import { StockRepository } from 'src/stock/repository/stock.repository';
@@ -12,6 +13,7 @@ import { AppDatabaseService } from 'src/app.service';
 
 describe('StockService', () => {
   let service: StockService;
+  let stockComputationService: StockComputationService;
   let mockStockRepository = {
     stockExists: jest.fn(),
   };
@@ -37,6 +39,7 @@ describe('StockService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StockService,
+        StockComputationService,
         {
           provide: StockRepository,
           useValue: mockStockRepository,
@@ -53,13 +56,22 @@ describe('StockService', () => {
     }).compile();
 
     service = module.get<StockService>(StockService);
+    stockComputationService = module.get<StockComputationService>(
+      StockComputationService,
+    );
   });
 
   it('should throw NotFoundException if stock does not exist', async () => {
     mockStockRepository.stockExists.mockResolvedValue(false);
 
     await expect(
-      service.getOptimalTradeTime(1, new Date(), new Date(), Granularity.HOUR),
+      service.getOptimalTradeTime(
+        1,
+        new Date(),
+        new Date(),
+        1,
+        Granularity.HOUR,
+      ),
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -73,6 +85,7 @@ describe('StockService', () => {
       1,
       new Date('2022-01-01'),
       new Date('2022-01-02'),
+      1,
       Granularity.HOUR,
     );
 
@@ -99,7 +112,6 @@ describe('StockService', () => {
 
     expect(result.buyTime).toEqual(optimalBuyTime);
     expect(result.sellTime).toEqual(optimalSellTime);
-    expect(result.maxProfit).toEqual(maxProfit);
   });
 
   it('should handle errors and throw InternalServerErrorException', async () => {
@@ -113,13 +125,14 @@ describe('StockService', () => {
         1,
         new Date('2022-01-01'),
         new Date('2022-01-10'),
+        1,
         Granularity.HOUR,
       ),
     ).rejects.toThrow(InternalServerErrorException);
   });
 
   it('should return SECOND granularity for date differences less than one day', () => {
-    const result = service['determineGranularity'](
+    const result = stockComputationService['determineGranularity'](
       new Date('2022-01-01T00:00:00Z'),
       new Date('2022-01-01T23:59:59Z'),
     );
@@ -127,7 +140,7 @@ describe('StockService', () => {
   });
 
   it('should return MINUTE granularity for date differences less than or equal to 31 days', () => {
-    const result = service['determineGranularity'](
+    const result = stockComputationService['determineGranularity'](
       new Date('2022-01-01T00:00:00Z'),
       new Date('2022-02-01T00:00:00Z'),
     );
@@ -135,7 +148,7 @@ describe('StockService', () => {
   });
 
   it('should return HOUR granularity for all other date differences', () => {
-    const result = service['determineGranularity'](
+    const result = stockComputationService['determineGranularity'](
       new Date('2022-01-01T00:00:00Z'),
       new Date('2022-03-01T00:00:00Z'),
     );

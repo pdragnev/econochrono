@@ -8,5 +8,14 @@ export class OptimalTradeStockResultDto {
   sellTime: Date;
 
   @IsNumber()
-  maxProfit: number;
+  buyPrice: number;
+
+  @IsNumber()
+  sellPrice: number;
+
+  @IsNumber()
+  numberOfStocks: number;
+
+  @IsNumber()
+  totalProfit: number;
 }

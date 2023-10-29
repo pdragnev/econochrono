@@ -10,5 +10,11 @@ export interface OptimalTradeStockResultDto {
 
   sellTime: Date
 
-  maxProfit: number
+  buyPrice: number
+
+  sellPrice: number
+
+  numberOfStocks: number
+
+  totalProfit: number
 }

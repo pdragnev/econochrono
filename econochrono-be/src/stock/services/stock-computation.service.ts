@@ -23,6 +23,8 @@ export class StockComputationService {
       maxProfit: new Decimal(0),
       buyTime: new Date(0),
       sellTime: new Date(0),
+      buyPrice: new Decimal(0),
+      sellPrice: new Decimal(0),
       minPriceInChunk: new Decimal(Infinity),
       minPriceTimestamp: new Date(0),
     };
@@ -45,7 +47,9 @@ export class StockComputationService {
       if (chunkResult.maxProfit.greaterThan(overallResult.maxProfit)) {
         overallResult.maxProfit = chunkResult.maxProfit;
         overallResult.buyTime = chunkResult.buyTime;
+        overallResult.buyPrice = chunkResult.buyPrice;
         overallResult.sellTime = chunkResult.sellTime;
+        overallResult.sellPrice = chunkResult.sellPrice;
       }
 
       overallResult.minPriceInChunk = chunkResult.minPriceInChunk;
@@ -56,6 +60,8 @@ export class StockComputationService {
       maxProfit: overallResult.maxProfit,
       buyTime: overallResult.buyTime,
       sellTime: overallResult.sellTime,
+      buyPrice: overallResult.buyPrice,
+      sellPrice: overallResult.sellPrice,
     };
   }
 
@@ -68,6 +74,8 @@ export class StockComputationService {
       maxProfit: new Decimal(0),
       buyTime: new Date(0),
       sellTime: new Date(0),
+      buyPrice: new Decimal(0),
+      sellPrice: new Decimal(0),
       minPriceInChunk: minPriceSoFar,
       minPriceTimestamp: minPriceTimestamp,
     };
@@ -88,7 +96,9 @@ export class StockComputationService {
       if (profit.greaterThan(chunkResult.maxProfit)) {
         chunkResult.maxProfit = profit;
         chunkResult.buyTime = chunkResult.minPriceTimestamp;
+        chunkResult.buyPrice = chunkResult.minPriceInChunk;
         chunkResult.sellTime = data[i].timestamp;
+        chunkResult.sellPrice = potentialMaxPrice;
       }
     }
     return chunkResult;
