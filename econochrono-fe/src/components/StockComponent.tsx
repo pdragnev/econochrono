@@ -54,11 +54,11 @@ const StockComponent: React.FC<StockProps> = ({ stock }) => {
         <div>{stock.stockName}</div>
       </div>
       <div className="date-row row">
-        <label>Available Start Date</label>
+        <label>Available Data from Date</label>
         <div>{new Date(stock.startDate).toLocaleDateString()}</div>
       </div>
       <div className="date-row row">
-        <label>Available End Date</label>
+        <label>Available Data to Date</label>
         <div>{new Date(stock.endDate).toLocaleDateString()}</div>
       </div>
       <StockInputFields

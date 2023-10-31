@@ -4,14 +4,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Jest Tests",
-      "program": "${workspaceFolder}/econochrono-be/node_modules/.bin/jest",
-      "args": ["--runInBand"],
+      "name": "Debug NestJS",
+      "program": "${workspaceFolder}/econochrono-be/src/main.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/econochrono-be/dist/**/*.js"],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "windows": {
-        "program": "${workspaceFolder}/econochrono-be/node_modules/jest/bin/jest"
-      }
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }

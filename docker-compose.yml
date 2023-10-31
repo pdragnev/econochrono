@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: econochrono
+      MYSQL_ROOT_PASSWORD: peso
+    ports:
+      - '3307:3306'
+    volumes:
+      - db-data:/var/lib/mysql
+
+  backend:
+    build: ./econochrono-be
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: 'mysql://root:peso@db:3306/econochrono'
+      INIT_DB: ${INIT_DB:-false}
+    depends_on:
+      - db
+
+  frontend:
+    build: ./econochrono-fe
+    ports:
+      - '3000:3000'
+    environment:
+      REACT_APP_API_URL: 'http://localhost:3001'
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
